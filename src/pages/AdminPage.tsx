@@ -22,7 +22,12 @@ import {
 	Tag,
 	Store,
 } from "lucide-react";
-import { admin, supabase } from "../lib/supabase";
+import {
+	auth,
+	checkSupabaseConnection,
+	supabase,
+	admin,
+} from "../lib/supabase";
 import NetworkErrorHandler from "../components/NetworkErrorHandler";
 
 const AdminPage = () => {
@@ -177,6 +182,7 @@ const AdminPage = () => {
 		try {
 			setIsProcessing((prev) => ({ ...prev, [listingId]: true }));
 
+			// FIXED: Folosim funcția admin.updateListingStatus în loc de query direct
 			const { error } = await admin.updateListingStatus(listingId, status);
 
 			if (error) {
@@ -222,7 +228,9 @@ const AdminPage = () => {
 			}
 
 			// Elimină anunțul din listă
-			setListings((prev) => prev.filter((listing) => listing.id !== listingId));
+			setListings((prev) =>
+				prev.filter((listing) => listing.id !== listingId),
+			);
 
 			alert("Anunțul a fost șters cu succes!");
 		} catch (err) {

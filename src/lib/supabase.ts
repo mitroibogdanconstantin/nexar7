@@ -414,12 +414,35 @@ export const auth = {
 	signUp: async (email: string, password: string, userData: any) => {
 		try {
 			console.log("🚀 Starting signup process for:", email);
+			console.log("📝 User data:", userData);
+
+			// Verificăm mai întâi dacă email-ul există deja
+			const { data: existingUsers, error: checkError } = await supabase
+				.from("profiles")
+				.select("email")
+				.eq("email", email)
+				.limit(1);
+
+			if (!checkError && existingUsers && existingUsers.length > 0) {
+				console.log("❌ Email already exists:", email);
+				return { 
+					data: null, 
+					error: { 
+						message: "Acest email este deja înregistrat. Încearcă să te conectezi în schimb." 
+					} 
+				};
+			}
 
 			const { data, error } = await supabase.auth.signUp({
 				email,
 				password,
 				options: {
-					data: userData,
+					data: {
+						name: userData.name,
+						phone: userData.phone,
+						location: userData.location,
+						sellerType: userData.sellerType, // Asigură-te că acest câmp este transmis corect
+					},
 					emailRedirectTo: `${window.location.origin}/auth/confirm`,
 				},
 			});
@@ -839,7 +862,7 @@ export const listings = {
 				}
 
 				throw new Error(
-					"Profilul utilizatorului nu a fost găsit. Te rugăm să-ți completezi profilul mai întâi.",
+					"Profilul utilizatorului nu a fost găsit. Te rog să-ți completezi profilul mai întâi.",
 				);
 			}
 
